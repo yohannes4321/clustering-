@@ -1,10 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
 from kmeans_from_scratch import kmeans
 from dbscan_from_scratch import dbscan
 from hdbscan_from_scratch import hdbscan
 from gmm_from_scratch import gmm
+
+# Load data and set X, k
+df = pd.read_csv("data/clustering_data.csv")
+X = df.values
+k = 3
 
 gmm_labels, gmm_means, _, _ = gmm(X, k, random_state=42)
 def silhouette_score_scratch(X, labels):
