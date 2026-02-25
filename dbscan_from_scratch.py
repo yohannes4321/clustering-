@@ -18,7 +18,7 @@ def dbscan(X, eps, min_samples):
         visited[i] = True
         neighbors = region_query(X, i, eps)
         if len(neighbors) < min_samples:
-            labels[i] = -1  # noise
+            labels[i] = -1
         else:
             labels[i] = cluster_id
             queue = deque(neighbors)
@@ -39,7 +39,7 @@ def dbscan(X, eps, min_samples):
 if __name__ == "__main__":
     df = pd.read_csv("data/clustering_data.csv")
     X = df.values
-    eps = 0.5  # You may tune this
+    eps = 0.5
     min_samples = 5
     labels = dbscan(X, eps, min_samples)
     plt.scatter(X[:,0], X[:,1], c=labels, cmap='tab10', s=30)
