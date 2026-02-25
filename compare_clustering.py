@@ -1,37 +1,77 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+
+import sys
 
 from kmeans_from_scratch import kmeans
 from dbscan_from_scratch import dbscan
 from hdbscan_from_scratch import hdbscan
 from gmm_from_scratch import gmm
 
+
 # Load data and set X, k
 df = pd.read_csv("data/clustering_data.csv")
 X = df.values
 k = 3
 
-gmm_labels, gmm_means, _, _ = gmm(X, k, random_state=42)
-def silhouette_score_scratch(X, labels):
-    unique_labels = set(labels)
-    if len(unique_labels) < 2 or len(unique_labels) == len(labels):
-        return np.nan
-    silhouette_vals = []
-    for i in range(len(X)):
-        same_cluster = labels == labels[i]
-        other_clusters = [l for l in unique_labels if l != labels[i] and l != -1]
-        if len(other_clusters) == 0 or np.sum(same_cluster) == 1 or labels[i] == -1:
-            silhouette_vals.append(0)
-            continue
-        a = np.mean(np.linalg.norm(X[i] - X[same_cluster], axis=1))
-        b = np.min([
-            np.mean(np.linalg.norm(X[i] - X[labels == l], axis=1))
-            for l in other_clusters if np.any(labels == l)
-        ])
-        s = (b - a) / max(a, b)
-        silhouette_vals.append(s)
-    return np.mean(silhouette_vals)
+# Choose algorithm from command-line argument
+algo = None
+if len(sys.argv) > 1:
+    algo = sys.argv[1].lower()
+else:
+    print("Usage: python compare_clustering.py [kmeans|dbscan|hdbscan|gmm]")
+    sys.exit(1)
+
+if algo == "kmeans":
+    gmm_labels, gmm_means, _, _ = gmm(X, k, random_state=42)
+    metrics = {
+        'davies_bouldin': davies_bouldin_score_scratch(X, gmm_labels),
+        'calinski_harabasz': calinski_harabasz_score_scratch(X, gmm_labels),
+        'n_clusters': len(set(gmm_labels)),
+        'n_outliers': np.sum(gmm_labels == -1) if -1 in gmm_labels else 0
+    }
+    print("GMM Metrics:", metrics)
+    plt.scatter(X[:,0], X[:,1], c=gmm_labels, cmap='tab20c', s=40, edgecolor='k')
+    plt.scatter(gmm_means[:,0], gmm_means[:,1], c='red', marker='x', s=120, label='GMM Means')
+    plt.title('GMM Clustering')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+elif algo == "dbscan":
+    dbscan_eps = 0.4
+    dbscan_min_samples = 4
+    dbscan_labels = dbscan(X, eps=dbscan_eps, min_samples=dbscan_min_samples)
+    metrics = {
+        'davies_bouldin': davies_bouldin_score_scratch(X, dbscan_labels),
+        'calinski_harabasz': calinski_harabasz_score_scratch(X, dbscan_labels),
+        'n_clusters': len(set(dbscan_labels)) - (1 if -1 in dbscan_labels else 0),
+        'n_outliers': np.sum(dbscan_labels == -1)
+    }
+    print("DBSCAN Metrics:", metrics)
+    plt.scatter(X[:,0], X[:,1], c=dbscan_labels, cmap='tab10', s=40, edgecolor='k')
+    plt.scatter(X[dbscan_labels==-1,0], X[dbscan_labels==-1,1], c='red', s=60, edgecolor='k', label='DBSCAN Outliers')
+    plt.title(f'DBSCAN (eps={dbscan_eps}, min_samples={dbscan_min_samples})')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+elif algo == "hdbscan":
+    hdbscan_min_samples = 4
+    hdbscan_min_cluster_size = 4
+    hdbscan_labels = hdbscan(X, min_samples=hdbscan_min_samples, min_cluster_size=hdbscan_min_cluster_size)
+    metrics = {
+        'davies_bouldin': davies_bouldin_score_scratch(X, hdbscan_labels),
+        'calinski_harabasz': calinski_harabasz_score_scratch(X, hdbscan_labels),
+        'n_clusters': len(set(hdbscan_labels)) - (1 if -1 in hdbscan_labels else 0),
+        'n_outliers': np.sum(hdbscan_labels == -1)
+    }
+    print("HDBSCAN Metrics:", metrics)
+    plt.scatter(X[:,0], X[:,1], c=hdbscan_labels, cmap='tab20', s=40, edgecolor='k')
+    plt.scatter(X[hdbscan_labels==-1,0], X[hdbscan_labels==-1,1], c='red', s=60, edgecolor='k', label='HDBSCAN Outliers')
+    plt.title(f'HDBSCAN (min_samples={hdbscan_min_samples}, min_cluster_size={hdbscan_min_cluster_size})')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+else:
+    print("Unknown algorithm. Use one of: kmeans, dbscan, hdbscan, gmm")
+    sys.exit(1)
 
 dbscan_results = []
 for eps in [0.2, 0.3, 0.4, 0.5, 0.6]:
