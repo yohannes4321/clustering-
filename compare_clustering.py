@@ -1,4 +1,5 @@
 
+import pandas as pd
 import sys
 
 from kmeans_from_scratch import kmeans
