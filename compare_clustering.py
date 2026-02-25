@@ -64,14 +64,14 @@ print(f"Best DBSCAN Silhouette: {dbscan_sil:.3f} (eps={best_dbscan[0]}, min_samp
 print(f"Best HDBSCAN Silhouette: {hdbscan_sil:.3f} (min_samples={best_hdbscan[0]}, min_cluster_size={best_hdbscan[1]}, clusters={best_hdbscan[3]})")
 print(f"GMM Silhouette: {gmm_sil:.3f}")
 summary = f"""
-\n# Clustering Results Summary\n
+# Clustering Results Summary
 | Algorithm | Silhouette | Parameters | #Clusters |
 |-----------|------------|------------|-----------|
 | K-means   | {kmeans_sil:.3f}     | k={k}        | {len(set(kmeans_labels))}        |
-| DBSCAN    | {dbscan_sil:.3f}     | eps={best_dbscan[0]}, min_samples={best_dbscan[1]} | {best_dbscan[3]}        |
-| HDBSCAN   | {hdbscan_sil:.3f}     | min_samples={best_hdbscan[0]}, min_cluster_size={best_hdbscan[1]} | {best_hdbscan[3]}        |
+| DBSCAN    | {dbscan_sil:.3f}     | eps={dbscan_eps}, min_samples={dbscan_min_samples} | {dbscan_n_clusters}        |
+| HDBSCAN   | {hdbscan_sil:.3f}     | min_samples={hdbscan_min_samples}, min_cluster_size={hdbscan_min_cluster_size} | {hdbscan_n_clusters}        |
 | GMM       | {gmm_sil:.3f}     | k={k}        | {len(set(gmm_labels))}        |
-    return np.mean(silhouette_vals)
+"""
 with open("README.md", "a") as f:
     f.write(summary)
 fig, axs = plt.subplots(2, 3, figsize=(18, 10))
