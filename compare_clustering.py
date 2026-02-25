@@ -71,7 +71,7 @@ summary = f"""
 | DBSCAN    | {dbscan_sil:.3f}     | eps={best_dbscan[0]}, min_samples={best_dbscan[1]} | {best_dbscan[3]}        |
 | HDBSCAN   | {hdbscan_sil:.3f}     | min_samples={best_hdbscan[0]}, min_cluster_size={best_hdbscan[1]} | {best_hdbscan[3]}        |
 | GMM       | {gmm_sil:.3f}     | k={k}        | {len(set(gmm_labels))}        |
-"""
+    return np.mean(silhouette_vals)
 with open("README.md", "a") as f:
     f.write(summary)
 fig, axs = plt.subplots(2, 3, figsize=(18, 10))
@@ -95,11 +95,23 @@ def plot_cluster_sizes(ax, labels, title):
     counts = Counter(labels)
     if -1 in counts: del counts[-1]
     ax.bar(list(counts.keys()), list(counts.values()), color='skyblue')
+kmeans_labels, kmeans_centroids = kmeans(X, k, random_state=42)
+dbscan_eps = 0.4
+dbscan_min_samples = 4
+dbscan_labels = dbscan(X, eps=dbscan_eps, min_samples=dbscan_min_samples)
+dbscan_n_clusters = len(set(dbscan_labels)) - (1 if -1 in dbscan_labels else 0)
+hdbscan_min_samples = 4
+hdbscan_min_cluster_size = 4
+hdbscan_labels = hdbscan(X, min_samples=hdbscan_min_samples, min_cluster_size=hdbscan_min_cluster_size)
+hdbscan_n_clusters = len(set(hdbscan_labels)) - (1 if -1 in hdbscan_labels else 0)
     ax.set_title(title)
+kmeans_sil = silhouette_score_scratch(X, kmeans_labels)
+dbscan_sil = silhouette_score_scratch(X, dbscan_labels)
+hdbscan_sil = silhouette_score_scratch(X, hdbscan_labels)
     ax.set_xlabel('Cluster Label')
     ax.set_ylabel('Size')
-
-plot_cluster_sizes(axs[1,2], kmeans_labels, 'K-means Cluster Sizes')
+print(f"DBSCAN Silhouette: {dbscan_sil:.3f} (eps={dbscan_eps}, min_samples={dbscan_min_samples}, clusters={dbscan_n_clusters})")
+print(f"HDBSCAN Silhouette: {hdbscan_sil:.3f} (min_samples={hdbscan_min_samples}, min_cluster_size={hdbscan_min_cluster_size}, clusters={hdbscan_n_clusters})")
 
 plt.tight_layout()
 plt.show()
