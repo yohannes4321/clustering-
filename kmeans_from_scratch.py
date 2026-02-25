@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+#
 def kmeans(X, k, max_iters=100, tol=1e-4, random_state=None):
     np.random.seed(random_state)
     n_samples, n_features = X.shape
