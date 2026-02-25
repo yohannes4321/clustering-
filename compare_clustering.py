@@ -1,3 +1,41 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Davies-Bouldin Index from scratch
+def davies_bouldin_score_scratch(X, labels):
+    unique_labels = [l for l in set(labels) if l != -1]
+    if len(unique_labels) < 2:
+        return np.nan
+    X = np.asarray(X)
+    labels = np.asarray(labels)
+    centroids = np.array([X[labels == l].mean(axis=0) for l in unique_labels])
+    S = np.array([np.mean(np.linalg.norm(X[labels == l] - centroids[i], axis=1)) for i, l in enumerate(unique_labels)])
+    db = []
+    for i in range(len(unique_labels)):
+        max_ratio = 0
+        for j in range(len(unique_labels)):
+            if i == j:
+                continue
+            ratio = (S[i] + S[j]) / np.linalg.norm(centroids[i] - centroids[j])
+            if ratio > max_ratio:
+                max_ratio = ratio
+        db.append(max_ratio)
+    return np.mean(db)
+
+# Calinski-Harabasz Index from scratch
+def calinski_harabasz_score_scratch(X, labels):
+    unique_labels = [l for l in set(labels) if l != -1]
+    if len(unique_labels) < 2:
+        return np.nan
+    X = np.asarray(X)
+    labels = np.asarray(labels)
+    n = len(X)
+    k = len(unique_labels)
+    overall_mean = X.mean(axis=0)
+    centroids = np.array([X[labels == l].mean(axis=0) for l in unique_labels])
+    between = sum([len(X[labels == l]) * np.sum((centroids[i] - overall_mean) ** 2) for i, l in enumerate(unique_labels)])
+    within = sum([np.sum((X[labels == l] - centroids[i]) ** 2) for i, l in enumerate(unique_labels)])
+    return (between / (k - 1)) / (within / (n - k))
 
 import pandas as pd
 import sys
